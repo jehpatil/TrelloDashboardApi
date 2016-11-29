@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trello</title>
+
+    <link rel="stylesheet" href="../static/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/bower_components/font-awesome/css/font-awesome.min.css" />
+
+</head>
+<body ng-app="trelloApp" ng-controller="trelloCtrl">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <span><span style="font-size: 28px;">TRELLO</span>
+                </span><a id="disconnectLink" class="btn btn-warning btn-sm pull-right">Deauthorize</a>
+            </div>
+            <div class="col-sm-12">
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <button class="btn btn-danger btn-sm pull-right" ng-click="openAddBoardModal()">Add Board</button>
+                        <h4>List Of Board</h4>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item" ng-repeat="boardItem in boardList">
+                            <i class="fa fa-plus fa-lg pull-right" ng-click="openAddListModal(boardItem)"></i>
+                            <i class="fa fa-minus fa-lg pull-right" ng-click="openDeleteBoardModal(boardItem)"></i>
+                            <span ng-click="getLists(boardItem);">{{boardItem.name}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-4" ng-repeat="listItem in lists" ng-init="rowIndex = $index">
+                <div class="panel panel-success">
+                    <div class="panel-heading" ng-click="getCard(listItem);">
+                        <i class="fa fa-plus fa-lg pull-right" ng-click="openAddCardModal(listItem);"></i>
+                        <i class="fa fa-minus fa-lg pull-right" ng-click="openDeleteListModal(listItem)"></i>
+                        <span>{{listItem.name}}</span>
+                    </div>
+                    <div ng-if="listItem.id" ng-show="!rowIndex" ng-repeat="cardItem in cards" ng-init="columnIndex = $index">
+                        <div class="panel panel-warning">
+                            <div class="panel-heading">
+                                <!-- <i class="fa fa-plus fa-lg pull-right"></i> -->
+                                <i class="fa fa-minus fa-lg pull-right" ng-click="deleteCard(cardItem)"></i>
+                                <i class="fa fa-arrows fa-lg pull-right" ng-click="openMoveCardModal(listItem)"></i>
+                                <span>Name: {{cardItem.name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--********** Add Board Model********** -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="addBoardModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Add Board</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>Name</label>
+                            <input type="text" class="form-control" ng-model="newBoard.name">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" ng-click="addBoard(newBoard);">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--********** Add List Model********** -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="addListModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Add List</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>Name</label>
+                            <input type="text" class="form-control" ng-model="newList.name">
+                        </div>
+                        <div class="col-sm-12">
+                            <label>Position (optional)</label>
+                            <input type="text" class="form-control" ng-model="newList.position">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="addList(newList);">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--********** Add Card Model********** -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="addCardModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Add Card</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>Name</label>
+                            <input type="text" class="form-control" ng-model="newCard.name">
+                        </div>
+                        <div class="col-sm-12">
+                            <label>Description</label>
+                            <input type="text" class="form-control" ng-model="newCard.description">
+                        </div>
+                        <div class="col-sm-12">
+                            <label>Position (optional)</label>
+                            <input type="text" class="form-control" ng-model="newCard.position">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="addCard(newCard);">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--********** Delete Board Model********** -->
+
+     <div class="modal fade" tabindex="-1" role="dialog" id="deleteBoardModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Do you want to Delete Board?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-danger" ng-click="deleteBoard();">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!--********** Delete List Model********** -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="deleteListModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Do you want to Delete List?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-danger" ng-click="deleteList();">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!--********** Move Card Model********** -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="moveListModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Move Card</h4>
+                </div>
+                  <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>List ID </label>
+                            <input type="text" class="form-control" ng-model="moveL.id">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" ng-click="moveCard(moveL);">Move</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js" type="text/javascript"></script>
+    <script src="https://api.trello.com/1/client.js?key=374767652a512cc9cff4f69d63719527"></script>
+    <script src="../static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../static/bower_components/angular/angular.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+
+    var app = angular.module('trelloApp',[]);
+    app.controller('trelloCtrl', ['$scope', '$timeout', function ($scope, $timeout) {
+
+        $scope.newCard = {
+            name: null,
+            description: null,
+            position: null
+        };
+        $scope.listIdForNewCard = null;
+
+        $scope.init = function() {
+            console.log("Trello Controller Loaded");
+            Trello.authorize({
+                type: "popup",
+                name: "Trello dashboard",
+                scope: {
+                    read: true,
+                    write: true
+                },
+                expiration: "never",
+                success: function() { console.log("Successful authentication"); $scope.getBoardList();},
+                error: function() { console.log("Failed authentication"); }
+            });
+        };
+
+        $timeout($scope.init);
+
+        //Variables Section
+        $scope.boardList = [];
+        $scope.currentBoard;
+        $scope.currentList;
+        $scope.currentCard;
+
+        $scope.openAddBoardModal = function(){
+            // $scope.NewBoardId = boardDetails;
+            $('#addBoardModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+        $scope.openAddListModal = function(boardDetails){
+            $scope.boardIdForNewList = boardDetails;
+            $('#addListModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+        $scope.openAddCardModal = function(listDetails){
+            $scope.listIdForNewCard = listDetails;
+            $('#addCardModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+        $scope.openDeleteBoardModal = function(boardItem){
+            $scope.deleteBoardItem = boardItem;
+            // console.log("lists Item in Modal window: ", listItem);
+            $('#deleteBoardModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+        $scope.openDeleteListModal = function(listItem){
+            $scope.deleteListItem = listItem;
+            // console.log("lists Item in Modal window: ", listItem);
+            $('#deleteListModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+       $scope.openMoveCardModal = function(listItem){
+            $scope.moveListItem = listItem;
+            // console.log("lists Item in Modal window: ", listItem);
+            $('#moveListModal').modal({backdrop: 'static', keyboard: false, show: true});
+        };
+
+        //Methods Section
+        $("#disconnectLink").click(function() {
+            Trello.deauthorize({
+                success: function() { console.log("Successful Deauthentication");  },
+                error: function() { console.log("Failed Deauthentication"); }
+            });
+        });
+
+        var success = function(successMsg) { console.log(successMsg); console.log("Success"); };
+        var error = function(errorMsg) { console.log(errorMsg); };
+
+        $scope.getBoardList = function(){
+            Trello.get('member/me/boards').done(function(data){
+                $scope.$apply(function(){
+                    $scope.boardList = data;
+                    $scope.currentBoard = $scope.boardList;
+                });
+            })
+        };
+
+        $scope.addBoard = function (data) {
+            console.log(data);
+            var newBoard = {
+                name: data.name
+            };
+            Trello.post('/boards/', newBoard).done(function(data){
+                $scope.getBoardList();
+                $('#addBoardModal').modal('hide');
+            });
+            console.log("Board Added Successfully");
+        }
+
+        $scope.deleteBoard = function () {
+            var val = {
+                value: "true"
+            }
+            // $scope.deleteList($scope.deleteBoardItem);
+            Trello.delete('/boards/' +$scope.deleteBoardItem.id, val, success, error).done(function(boardItem) {
+                $scope.getBoardList();
+                $('#deleteBoardModal').modal('hide');
+                // console.log("List Deleted Successfully");
+            });
+        }
+
+        $scope.getLists = function(boardItem){
+            console.log(boardItem);
+            Trello.get('/boards/'+ boardItem.id +'/lists', success, error).done(function(data){
+                $scope.$apply(function(){
+                    $scope.lists = data;
+                    // console.log(typeof($scope.lists));
+                    $scope.currentList = $scope.lists;
+                });
+            });
+        };
+
+        $scope.addList = function (data) {
+            console.log(data);
+            var newList = {
+                name: data.name,
+                pos: data.position,
+                idBoard: $scope.boardIdForNewList.id
+            };
+
+            Trello.post('/lists/', newList).done(function(data){
+                $scope.getLists($scope.boardIdForNewList);
+                $('#addListModal').modal('hide');
+            });
+            console.log("List Added Successfully");
+        }
+
+         $scope.deleteList = function () {
+            var val = {
+                value: "true"
+            }
+            $scope.deleteCard($scope.deleteListItem);
+            Trello.put('/lists/' +$scope.deleteListItem.id+ '/closed', val, success, error).done(function(listItem) {
+                $scope.getLists($scope.deleteListItem);
+                $('#deleteListModal').modal('hide');
+                // console.log("List Deleted Successfully");
+            });
+        }
+
+       $scope.listIdForNewCard = null;
+       $scope.getCard = function(listItem) {
+            Trello.get('/lists/'+ listItem.id +'/cards', success, error).done(function (data) {
+                $scope.$apply(function() {
+                    $scope.cards = data;
+                    console.log($scope.cards);
+                    $scope.currentCard = $scope.cards;
+                });
+            });
+        };
+
+         $scope.addCard = function (data) {
+            console.log(data);
+            var newCard = {
+                name: data.name,
+                desc: data.description,
+                pos: data.position,
+                due: null,
+                idList: $scope.listIdForNewCard.id
+            };
+
+            Trello.post('/cards/', newCard).done(function(data){
+                $scope.getCard($scope.listIdForNewCard);
+                $('#addCardModal').modal('hide');
+            });
+            console.log("Card Added Successfully");
+        }
+
+        $scope.moveCard = function (data) {
+            var moveL={
+                value: data.id
+            }
+            Trello.put('/cards/583c1143c5e79950c3286081/idList', moveL, success, error);
+            // console.log("Move Card...");
+        }
+
+        $scope.deleteCard = function (cardItem) {
+            Trello.delete('/cards/'+ cardItem.id).done(function(cardItem) {
+                $scope.getCard($scope.listIdForNewCard);
+                $('#deleteListModal').modal('hide');
+                // console.log("Card Deleted Successfully");
+            });
+        }
+    }]);
+</script>
+</body>
+</html>
